@@ -1,59 +1,46 @@
 # Copyright 2006 The Android Open Source Project
 
-# Setting LOCAL_PATH will mess up all-subdir-makefiles, so do it beforehand.
-legacy_modules := power uevent vibrator wifi qemu qemu_tracing
-
-SAVE_MAKEFILES := $(call all-named-subdir-makefiles,$(legacy_modules))
-LEGACY_AUDIO_MAKEFILES := $(call all-named-subdir-makefiles,audio)
-
-LOCAL_PATH:= $(call my-dir)
-include $(CLEAR_VARS)
-
-LOCAL_SHARED_LIBRARIES := libcutils liblog
-
-LOCAL_INCLUDES += $(LOCAL_PATH)
-
-ifdef USES_TI_MAC80211
-ifneq ($(wildcard external/libnl),)
-LOCAL_SHARED_LIBRARIES += libnl
-LOCAL_C_INCLUDES += external/libnl/include
-else
-LOCAL_STATIC_LIBRARIES := libnl_2
-LOCAL_C_INCLUDES += external/libnl-headers
+ifdef WIFI_DRIVER_MODULE_PATH
+LOCAL_CFLAGS += -DWIFI_DRIVER_MODULE_PATH=\"$(WIFI_DRIVER_MODULE_PATH)\"
 endif
+ifdef WIFI_DRIVER_MODULE_ARG
+LOCAL_CFLAGS += -DWIFI_DRIVER_MODULE_ARG=\"$(WIFI_DRIVER_MODULE_ARG)\"
+endif
+ifdef WIFI_DRIVER_MODULE_AP_ARG
+LOCAL_CFLAGS += -DWIFI_DRIVER_MODULE_AP_ARG=\"$(WIFI_DRIVER_MODULE_AP_ARG)\"
+endif
+ifdef WIFI_DRIVER_MODULE_NAME
+LOCAL_CFLAGS += -DWIFI_DRIVER_MODULE_NAME=\"$(WIFI_DRIVER_MODULE_NAME)\"
+endif
+ifdef WIFI_FIRMWARE_LOADER
+LOCAL_CFLAGS += -DWIFI_FIRMWARE_LOADER=\"$(WIFI_FIRMWARE_LOADER)\"
+endif
+ifdef WIFI_DRIVER_FW_PATH_STA
+LOCAL_CFLAGS += -DWIFI_DRIVER_FW_PATH_STA=\"$(WIFI_DRIVER_FW_PATH_STA)\"
+endif
+ifdef WIFI_DRIVER_FW_PATH_AP
+LOCAL_CFLAGS += -DWIFI_DRIVER_FW_PATH_AP=\"$(WIFI_DRIVER_FW_PATH_AP)\"
+endif
+ifdef WIFI_DRIVER_FW_PATH_P2P
+LOCAL_CFLAGS += -DWIFI_DRIVER_FW_PATH_P2P=\"$(WIFI_DRIVER_FW_PATH_P2P)\"
+endif
+ifdef WIFI_DRIVER_FW_PATH_PARAM
+LOCAL_CFLAGS += -DWIFI_DRIVER_FW_PATH_PARAM=\"$(WIFI_DRIVER_FW_PATH_PARAM)\"
 endif
 
-LOCAL_CFLAGS  += -DQEMU_HARDWARE
-QEMU_HARDWARE := true
+LOCAL_SRC_FILES += wifi/wifi.c
 
-LOCAL_SHARED_LIBRARIES += libdl
+ifeq ($(TARGET_BOARD_PLATFORM),mt6589)
+LOCAL_CFLAGS += -DMTK_MT6589	37
+endif
 
-include $(SAVE_MAKEFILES)
+ifdef WPA_SUPPLICANT_VERSION
+LOCAL_CFLAGS += -DLIBWPA_CLIENT_EXISTS
+LOCAL_SHARED_LIBRARIES += libwpa_client
+endif
 
-LOCAL_MODULE:= libhardware_legacy
+ifeq ($(BOARD_HAVE_SAMSUNG_WIFI),true)
+LOCAL_CFLAGS += -DSAMSUNG_WIFI
+endif
 
-include $(BUILD_SHARED_LIBRARY)
-
-# static library for librpc
-include $(CLEAR_VARS)
-
-LOCAL_MODULE:= libpower
-
-LOCAL_SRC_FILES += power/power.c
-
-include $(BUILD_STATIC_LIBRARY)
-
-# shared library for various HALs
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := libpower
-
-LOCAL_SRC_FILES := power/power.c
-
-LOCAL_SHARED_LIBRARIES := libcutils
-
-include $(BUILD_SHARED_LIBRARY)
-
-# legacy_audio builds it's own set of libraries that aren't linked into
-# hardware_legacy
-include $(LEGACY_AUDIO_MAKEFILES)
+LOCAL_SHARED_LIBRARIES += libnetutils
