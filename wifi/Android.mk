@@ -30,14 +30,13 @@ endif
 
 LOCAL_SRC_FILES += wifi/wifi.c
 
-<<<<<<< HEAD
 ifdef WPA_SUPPLICANT_VERSION
 LOCAL_CFLAGS += -DLIBWPA_CLIENT_EXISTS
 LOCAL_SHARED_LIBRARIES += libwpa_client
-=======
+endif
+
 ifeq ($(TARGET_BOARD_PLATFORM),mt6589)
 LOCAL_CFLAGS += -DMTK_MT6589
->>>>>>> f391814... wifi: Add MTK wifi support
 endif
 
 ifeq ($(BOARD_HAVE_SAMSUNG_WIFI),true)
